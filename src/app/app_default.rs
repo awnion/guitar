@@ -115,6 +115,7 @@ impl Default for App {
             layout: Layout::default(),
             
             // Focus
+            is_shas: true,
             is_minimal: false,
             is_branches: false,
             is_status: false,
@@ -167,6 +168,10 @@ impl Default for App {
             // Modal create branch
             create_branch_editor: EditorState::default(),
             create_branch_editor_event_handler: EditorEventHandler::default(),
+
+            // Modal grep
+            grep_editor: EditorState::default(),
+            grep_editor_event_handler: EditorEventHandler::default(),
 
             // Modal delete branch
             modal_delete_branch_selected: 0,

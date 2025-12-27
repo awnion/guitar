@@ -70,12 +70,16 @@ impl App {
             start,
             end + 1
         );
-        let sha_range = render_sha_range(
-            &self.theme,
-            &self.oids,
-            start,
-            end
-        );
+        let sha_range = if self.is_shas {
+            Some(render_sha_range(
+                &self.theme,
+                &self.oids,
+                start,
+                end
+            ))
+        } else {
+            None
+        };
         let graph_range = render_graph_range(
             &self.theme,
             &self.oids,
@@ -119,13 +123,17 @@ impl App {
                     })
                     .max()
                     .unwrap_or(0) as u16;
+
+                // Create cells vector
+                let mut cells = Vec::with_capacity(if self.is_shas { 3 } else { 2 });
+
+                // Fill the vector with cells
+                if let Some(sha) = &sha_range { cells.push(WidgetCell::from(sha.get(idx).cloned().unwrap_or_default()));}
+                cells.push(WidgetCell::from(graph_range.get(idx).cloned().unwrap_or_default()));
+                cells.push(WidgetCell::from(message_range.get(idx).cloned().unwrap_or_default()));
                 
                 // Assemble the row
-                let mut row = Row::new(vec![
-                    WidgetCell::from(sha_range.get(idx).cloned().unwrap_or_default()),
-                    WidgetCell::from(graph_range.get(idx).cloned().unwrap_or_default()),
-                    WidgetCell::from(message_range.get(idx).cloned().unwrap_or_default()),
-                ]);
+                let mut row = Row::new(cells);
 
                 // Change the row background if selected
                 if idx + start == self.graph_selected && self.focus == Focus::Viewport {
@@ -139,11 +147,22 @@ impl App {
             }
         }
 
-        // Setup the table
-        let table = Table::new(rows, [
+        // Conditional constraints
+        let constraints = if self.is_shas {
+            vec![
                 ratatui::layout::Constraint::Length(6),
                 ratatui::layout::Constraint::Length(width + 5),
-                ratatui::layout::Constraint::Min(0)])
+                ratatui::layout::Constraint::Min(0),
+            ]
+        } else {
+            vec![
+                ratatui::layout::Constraint::Length(width + 5),
+                ratatui::layout::Constraint::Min(0),
+            ]
+        };
+
+        // Setup the table
+        let table = Table::new(rows, constraints)
             .block(Block::default()
                 .borders(Borders::RIGHT | Borders::LEFT)
                 .border_style(Style::default().fg(self.theme.COLOR_BORDER))

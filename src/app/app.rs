@@ -124,7 +124,8 @@ pub enum Focus {
     ModalSolo,
     ModalCommit,
     ModalCreateBranch,
-    ModalDeleteBranch
+    ModalDeleteBranch,
+    ModalGrep
 }
 
 #[derive(PartialEq, Eq)]
@@ -171,6 +172,7 @@ pub struct App {
     pub layout: Layout,
 
     // Focus
+    pub is_shas: bool,
     pub is_minimal: bool,
     pub is_branches: bool,
     pub is_status: bool,
@@ -223,6 +225,10 @@ pub struct App {
     // Modal create branch
     pub create_branch_editor: EditorState,
     pub create_branch_editor_event_handler: EditorEventHandler,
+
+    // Modal grep
+    pub grep_editor: EditorState,
+    pub grep_editor_event_handler: EditorEventHandler,
 
     // Modal delete a branch
     pub modal_delete_branch_selected: i32,
@@ -329,6 +335,9 @@ impl App  {
             }
             Focus::ModalDeleteBranch => {
                 self.draw_modal_delete_branch(frame);
+            }
+            Focus::ModalGrep => {
+                self.draw_modal_grep(frame);
             }
             _ => {}
         }

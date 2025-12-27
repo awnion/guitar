@@ -2,6 +2,7 @@
 use std::{
     io
 };
+use git2::Oid;
 #[rustfmt::skip]
 use indexmap::IndexMap;
 #[rustfmt::skip]
@@ -85,6 +86,7 @@ pub enum Command {
     SoloBranch,
     
     // Git
+    Grep,
     Fetch,
     Checkout,
     HardReset,
@@ -100,6 +102,7 @@ pub enum Command {
     GoBack,
     Reload,
     Minimize,
+    ToggleShas,
     ToggleBranches,
     ToggleStatus,
     ToggleInspector,
@@ -146,6 +149,7 @@ impl App {
         map.insert(KeyBinding::new(Char('o'), KeyModifiers::NONE), Command::SoloBranch);
         
         // Git
+        map.insert(KeyBinding::new(Char('g'), KeyModifiers::NONE), Command::Grep);
         map.insert(KeyBinding::new(Char('f'), KeyModifiers::NONE), Command::Fetch);
         map.insert(KeyBinding::new(Char('c'), KeyModifiers::NONE), Command::Checkout);
         map.insert(KeyBinding::new(Char('h'), KeyModifiers::NONE), Command::HardReset);
@@ -161,6 +165,7 @@ impl App {
         map.insert(KeyBinding::new(Esc, KeyModifiers::NONE), Command::GoBack);
         map.insert(KeyBinding::new(Char('r'), KeyModifiers::NONE), Command::Reload);
         map.insert(KeyBinding::new(Char('.'), KeyModifiers::NONE), Command::Minimize);
+        map.insert(KeyBinding::new(Char('w'), KeyModifiers::NONE), Command::ToggleShas);
         map.insert(KeyBinding::new(Char('`'), KeyModifiers::NONE), Command::ToggleBranches);
         map.insert(KeyBinding::new(Char('2'), KeyModifiers::NONE), Command::ToggleStatus);
         map.insert(KeyBinding::new(Char('1'), KeyModifiers::NONE), Command::ToggleInspector);
@@ -247,6 +252,55 @@ impl App {
                 }
                 return;
             }
+            Focus::ModalGrep => {
+                if self.grep_editor.mode == EditorMode::Normal {
+                    match key_event.code {
+                        KeyCode::Esc => {
+                            self.focus = Focus::Viewport;
+                        }
+                        KeyCode::Enter => {
+                            let sha = editor_state_to_string(&self.grep_editor);
+
+                            // Reject obviously invalid prefixes early
+                            if sha.is_empty() || sha.len() > 40 {
+                                return;
+                            }
+                            
+                            // Find the correpsonding oid
+                            let oid: Option<Oid> = self.oids.oids.iter()
+                                .find(|oid| oid.to_string().starts_with(&sha))
+                                .copied();
+
+                            // In case oid exists
+                            if let Some(oid) = oid {
+
+                                // Get the alias
+                                let oid_alias = self.oids.get_alias_by_oid(oid);
+
+                                // Find the position in the sorted alias vector
+                                let next = self.oids.get_sorted_aliases()
+                                    .iter()
+                                    .position(|&alias| alias == oid_alias)
+                                    .unwrap();
+
+                                // Scroll to line number
+                                self.graph_selected = next;
+                                self.grep_editor = edtui::EditorState::default();
+                                self.focus = Focus::Viewport;
+                            }
+
+                        }
+                        _ => {
+                            self.grep_editor_event_handler
+                                .on_key_event(key_event, &mut self.grep_editor);
+                        }
+                    }
+                } else {
+                    self.grep_editor_event_handler
+                        .on_key_event(key_event, &mut self.grep_editor);
+                }
+                return;
+            }
             Focus::Viewport => {
                 if self.viewport == Viewport::Editor {
                     if self.file_editor.mode == EditorMode::Normal {
@@ -296,6 +350,7 @@ impl App {
                 Command::SoloBranch => self.on_solo_branch(),
 
                 // Git
+                Command::Grep => self.on_grep(),
                 Command::Fetch => self.on_fetch(),
                 Command::Checkout => self.on_checkout(),
                 Command::HardReset => self.on_hard_reset(),
@@ -311,6 +366,7 @@ impl App {
                 Command::GoBack => self.on_go_back(),
                 Command::Reload => self.on_reload(),
                 Command::Minimize => self.on_minimize(),
+                Command::ToggleShas => self.on_toggle_shas(),
                 Command::ToggleBranches => self.on_toggle_branches(),
                 Command::ToggleStatus => self.on_toggle_status(),
                 Command::ToggleInspector => self.on_toggle_inspector(),
@@ -1003,6 +1059,15 @@ impl App {
         };
     }
 
+    pub fn on_grep(&mut self) {
+        if self.viewport == Viewport::Graph {
+            if self.focus == Focus::Viewport {
+                self.focus = Focus::ModalGrep;
+                self.grep_editor.mode = EditorMode::Insert;
+            }
+        }
+    }
+
     pub fn on_fetch(&mut self) {
         if self.viewport != Viewport::Settings {
             let handle = fetch_over_ssh(&self.path, "origin");
@@ -1232,6 +1297,12 @@ impl App {
 
     pub fn on_minimize(&mut self) {
         self.is_minimal = !self.is_minimal;
+    }
+
+    pub fn on_toggle_shas(&mut self) {
+        if self.viewport == Viewport::Graph && self.focus == Focus::Viewport {
+            self.is_shas = !self.is_shas;
+        }
     }
 
     pub fn on_toggle_branches(&mut self) {
