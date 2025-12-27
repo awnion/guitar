@@ -124,3 +124,15 @@ pub fn get_git_user_info(
     let email = config.get_string("user.email").ok();
     Ok((name, email))
 }
+
+pub fn get_stashed_commits(repo: &mut Repository, oids: &mut Oids) -> Vec<u32> {
+    let mut stashes = Vec::new();
+
+    repo.stash_foreach(|_, _, oid| {
+        let alias = oids.get_alias_by_oid(*oid);
+        stashes.push(alias);
+        true
+    }).unwrap();
+
+    stashes
+}

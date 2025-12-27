@@ -21,6 +21,7 @@ use edtui::{
     EditorEventHandler,
     EditorState
 };
+use crate::core::stashes::Stashes;
 #[rustfmt::skip]
 use crate::{
     app::{
@@ -104,6 +105,7 @@ impl Default for App {
             oids: Oids::default(),
             branches: Branches::default(),
             tags: Tags::default(),
+            stashes: Stashes::default(),
             uncommitted: UncommittedChanges::default(),
 
             // Cache

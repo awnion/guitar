@@ -50,6 +50,7 @@ use ratatui::{
         Span
     },
 };
+use crate::core::stashes::Stashes;
 #[rustfmt::skip]
 use crate::{
     app::{
@@ -161,6 +162,7 @@ pub struct App {
     pub oids: Oids,
     pub branches: Branches,
     pub tags: Tags,
+    pub stashes: Stashes,
     pub uncommitted: UncommittedChanges,
 
     // Cache
@@ -416,6 +418,7 @@ impl App  {
                     branches_remote: walk_ctx.branches_remote.clone(),
                     tags_lanes: walk_ctx.tags_lanes.clone(),
                     tags_local: walk_ctx.tags_local.clone(),
+                    stashes_lanes: walk_ctx.stashes_lanes.clone(),
                     buffer: walk_ctx.buffer.clone(),
                     is_first,
                     is_again,
@@ -473,6 +476,12 @@ impl App  {
                 &self.color,
                 &result.tags_lanes,
                 result.tags_local
+            );
+
+            // Update stashes
+            self.stashes.feed(
+                &self.color,
+                &result.stashes_lanes,
             );
 
             if !result.is_again {

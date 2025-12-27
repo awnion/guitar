@@ -98,6 +98,7 @@ impl App {
             &self.tags.local,
             &mut self.branches.colors,
             &mut self.tags.colors,
+            &mut self.stashes.colors,
             start,
             end,
             self.graph_selected,

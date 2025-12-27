@@ -152,6 +152,8 @@ pub fn render_graph_range(
                     layers.commit(SYM_MERGE, lane_idx);
                 } else if all.contains_key(alias) {
                     layers.commit(SYM_COMMIT_BRANCH, lane_idx);
+                } else if oids.stashes.contains(alias) {
+                    layers.commit(SYM_COMMIT_STASH, lane_idx);
                 } else {
                     layers.commit(SYM_COMMIT, lane_idx);
                 }
@@ -477,6 +479,7 @@ pub fn render_message_range(
     tags: &HashMap<u32, Vec<String>>,
     branch_colors: &mut HashMap<u32, Color>,
     tag_colors: &mut HashMap<u32, Color>,
+    stashes_colors: &mut HashMap<u32, Color>,
     start: usize,
     end: usize,
     selected: usize,
@@ -536,6 +539,14 @@ pub fn render_message_range(
                         ));
                     }
                 }
+            }
+
+            if oids.stashes.contains(&alias) {
+                spans.push(Span::styled("⊡ stash ", Style::default().fg(if let Some(color) = stashes_colors.get(&alias) {
+                    *color
+                } else {
+                    theme.COLOR_TEXT
+                })));
             }
 
             spans.push(Span::styled(

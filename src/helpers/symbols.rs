@@ -1,5 +1,6 @@
 pub const SYM_COMMIT_BRANCH: &str = "●";
 pub const SYM_COMMIT: &str = "○";
+pub const SYM_COMMIT_STASH: &str = "◎";
 pub const SYM_VERTICAL: &str = "│";
 pub const SYM_VERTICAL_DOTTED: &str = "┊";
 pub const SYM_HORIZONTAL: &str = "─";

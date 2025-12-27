@@ -34,6 +34,7 @@ mod core {
     pub mod oids;
     pub mod branches;
     pub mod tags;
+    pub mod stashes;
 }
 pub mod git {
     pub mod actions {
