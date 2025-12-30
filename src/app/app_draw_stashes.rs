@@ -1,4 +1,4 @@
-use ratatui::{layout::Rect, widgets::{Borders, Paragraph}};
+use ratatui::{layout::Rect, widgets::{Paragraph}};
 #[rustfmt::skip]
 use ratatui::{
     Frame,

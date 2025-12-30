@@ -259,9 +259,9 @@ impl App {
                 Command::ScrollDownCommit => self.on_scroll_down_commit(),
                 Command::GoToBeginning => self.on_scroll_to_beginning(),
                 Command::GoToEnd => self.on_scroll_to_end(),
+                Command::Jump => self.on_jump(),
 
                 // Branches
-                Command::JumpToBranch => self.on_jump_to_branch(),
                 Command::SoloBranch => self.on_solo_branch(),
 
                 // Git
@@ -918,12 +918,28 @@ impl App {
         };
     }
 
-    pub fn on_jump_to_branch(&mut self) {
-        if self.focus == Focus::Branches {
-            self.viewport = Viewport::Graph;
-            let oidi = self.branches.sorted.get(self.branches_selected).unwrap().0;
-            self.graph_selected = self.oids.get_sorted_aliases().iter().position(|o| o == &oidi).unwrap_or(0);
-        };
+    pub fn on_jump(&mut self) {
+        match self.focus {
+            Focus::Branches => {
+                self.viewport = Viewport::Graph;
+                self.focus = Focus::Viewport;
+                let alias = self.branches.sorted.get(self.branches_selected).unwrap().0;
+                self.graph_selected = self.oids.get_sorted_aliases().iter().position(|o| o == &alias).unwrap_or(0);
+            }
+            Focus::Tags => {
+                self.viewport = Viewport::Graph;
+                self.focus = Focus::Viewport;
+                let alias = self.tags.sorted.get(self.tags_selected).unwrap().0;
+                self.graph_selected = self.oids.get_sorted_aliases().iter().position(|o| o == &alias).unwrap_or(0);
+            } 
+            Focus::Stashes => {
+                self.viewport = Viewport::Graph;
+                self.focus = Focus::Viewport;
+                let alias = self.oids.stashes.get(self.stashes_selected).unwrap();
+                self.graph_selected = self.oids.get_sorted_aliases().iter().position(|o| o == alias).unwrap_or(0);
+            }
+            _ => {}
+        }
     }
     
     pub fn on_solo_branch(&mut self) {

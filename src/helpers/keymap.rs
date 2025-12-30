@@ -34,7 +34,7 @@ pub enum Command {
     GoToEnd,
     
     // Branches
-    JumpToBranch,
+    Jump,
     SoloBranch,
     
     // Git
@@ -86,9 +86,9 @@ fn default_keymap() -> IndexMap<KeyBinding, Command> {
     map.insert(KeyBinding::new(Down, KeyModifiers::ALT), Command::ScrollDownCommit);
     map.insert(KeyBinding::new(Home, KeyModifiers::NONE), Command::GoToBeginning);
     map.insert(KeyBinding::new(End, KeyModifiers::NONE), Command::GoToEnd);
+    map.insert(KeyBinding::new(Char('j'), KeyModifiers::NONE), Command::Jump);
 
     // Branches
-    map.insert(KeyBinding::new(Char('j'), KeyModifiers::NONE), Command::JumpToBranch);
     map.insert(KeyBinding::new(Char('o'), KeyModifiers::NONE), Command::SoloBranch);
     
     // Git
