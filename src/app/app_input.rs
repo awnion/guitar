@@ -721,6 +721,10 @@ impl App {
         match self.focus {
             Focus::Viewport => if self.viewport == Viewport::Graph {
                 self.graph_selected /= 2;
+                if self.graph_selected != 0 && self.graph_selected < self.oids.get_commit_count() {
+                    let oid = self.oids.get_oid_by_idx(self.graph_selected);
+                    self.current_diff = get_filenames_diff_at_oid(&self.repo, *oid);
+                }
             },
             Focus::Branches => {
                 self.branches_selected /= 2
@@ -740,6 +744,10 @@ impl App {
             Focus::Viewport => if self.viewport == Viewport::Graph {
                 self.graph_selected = (self.oids.get_commit_count() - 1)
                     .min(self.graph_selected + (self.oids.get_commit_count() - self.graph_selected) / 2);
+                if self.graph_selected != 0 && self.graph_selected < self.oids.get_commit_count() {
+                    let oid = self.oids.get_oid_by_idx(self.graph_selected);
+                    self.current_diff = get_filenames_diff_at_oid(&self.repo, *oid);
+                }
             },
             Focus::Branches => {
                 let total = self.branches.sorted.len();
@@ -883,7 +891,11 @@ impl App {
             }
             Focus::Viewport => match self.viewport {
                 Viewport::Graph => {
-                    self.graph_selected = usize::MAX;
+                    self.graph_selected = self.oids.get_commit_count() - 1;
+                    if self.graph_selected != 0 {
+                        let oid = self.oids.get_oid_by_idx(self.graph_selected);
+                        self.current_diff = get_filenames_diff_at_oid(&self.repo, *oid);
+                    }
                 }
                 Viewport::Viewer => {
                     self.viewer_selected = usize::MAX;
