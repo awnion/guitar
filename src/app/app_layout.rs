@@ -112,13 +112,17 @@ impl App {
         let mut tags_scrollbar = chunks_pane_left[1];
         tags_scrollbar.width += 1;
         let mut tags = chunks_pane_left[1];
-        tags.y += 1;
+        if !self.is_branches {
+            tags.y += 1;
+        }
 
         // Stashes
         let mut stashes_scrollbar = chunks_pane_left[2];
         stashes_scrollbar.width += 1;
         let mut stashes = chunks_pane_left[2];
-        stashes.y += 1;
+        if !self.is_branches && !self.is_tags {
+            stashes.y += 1;
+        }
 
         // Graph
         let graph_scrollbar = chunks_horizontal[1];

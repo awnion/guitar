@@ -59,7 +59,7 @@ impl App {
 
         // Get vertical dimensions
         let total_lines = lines.len();
-        let visible_height = self.layout.stashes.height as usize - 1;
+        let visible_height = self.layout.stashes.height as usize - if self.is_branches || self.is_tags { 1 } else { 2 };
 
         // Clamp selection
         if total_lines == 0 {

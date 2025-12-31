@@ -62,7 +62,7 @@ impl App {
 
         // Get vertical dimensions
         let total_lines = lines.len();
-        let visible_height = self.layout.tags.height as usize - 1;
+        let visible_height = self.layout.tags.height as usize - if self.is_branches { 1 } else { 2 };
 
         // Clamp selection
         if total_lines == 0 {
@@ -80,17 +80,17 @@ impl App {
 
         // Setup list items
         let list_items: Vec<ListItem> = lines[start..end]
-            .iter()
-            .enumerate()
-            .map(|(idx, line)| {
-                if start + idx == self.tags_selected && self.focus == Focus::Tags {
-                    let spans: Vec<Span> = line.iter().map(|span| { Span::styled(span.content.clone(), span.style) }).collect();
-                    ListItem::new(Line::from(spans)).style(Style::default().bg(self.theme.COLOR_GREY_800))
-                } else if (idx + start).is_multiple_of(2) {
-                    ListItem::new(Line::from(line.clone().spans)).style(Style::default().bg(self.theme.COLOR_GREY_900))
-                } else {
-                    ListItem::new(line.clone())
-                }
+                .iter()
+                .enumerate()
+                .map(|(idx, line)| {
+                    if start + idx == self.tags_selected && self.focus == Focus::Tags {
+                        let spans: Vec<Span> = line.iter().map(|span| { Span::styled(span.content.clone(), span.style) }).collect();
+                        ListItem::new(Line::from(spans)).style(Style::default().bg(self.theme.COLOR_GREY_800))
+                    } else if (idx + start).is_multiple_of(2) {
+                        ListItem::new(Line::from(line.clone().spans)).style(Style::default().bg(self.theme.COLOR_GREY_900))
+                    } else {
+                        ListItem::new(line.clone())
+                    }
             })
             .collect();
         
