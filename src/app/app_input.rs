@@ -1398,12 +1398,14 @@ impl App {
 
     pub fn on_minimize(&mut self) {
         self.is_minimal = !self.is_minimal;
+        self.save_layout();
     }
 
     pub fn on_toggle_shas(&mut self) {
         if self.viewport == Viewport::Graph && self.focus == Focus::Viewport {
             self.is_shas = !self.is_shas;
         }
+        self.save_layout();
     }
 
     pub fn on_toggle_branches(&mut self) {
@@ -1416,6 +1418,7 @@ impl App {
         } else {
             self.focus = Focus::Viewport;
         }
+        self.save_layout();
     }
 
     pub fn on_toggle_tags(&mut self) {
@@ -1428,6 +1431,7 @@ impl App {
         } else {
             self.focus = Focus::Viewport;
         }
+        self.save_layout();
     }
 
     pub fn on_toggle_stashes(&mut self) {
@@ -1440,6 +1444,7 @@ impl App {
         } else {
             self.focus = Focus::Viewport;
         }
+        self.save_layout();
     }
 
     pub fn on_toggle_status(&mut self) {
@@ -1448,6 +1453,7 @@ impl App {
         {
             self.focus = Focus::Viewport;
         }
+        self.save_layout();
     }
 
     pub fn on_toggle_inspector(&mut self) {
@@ -1459,6 +1465,7 @@ impl App {
                 self.focus = Focus::Viewport;
             }
         }
+        self.save_layout();
     }
 
     pub fn on_toggle_settings(&mut self) {

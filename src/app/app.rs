@@ -248,6 +248,7 @@ impl App  {
     
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
 
+        self.load_layout();
         self.load_keymap();
         self.reload();
 
