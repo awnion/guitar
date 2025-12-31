@@ -21,11 +21,8 @@ mod app {
     pub mod app_draw_statusbar;
     pub mod app_draw_modal_checkout;
     pub mod app_draw_modal_solo;
-    pub mod app_draw_modal_commit;
-    pub mod app_draw_modal_create_branch;
     pub mod app_draw_modal_delete_branch;
-    pub mod app_draw_modal_grep;
-    pub mod app_draw_modal_tag;
+    pub mod app_draw_modal_input;
     pub mod app_draw_modal_delete_tag;
 }
 mod core {
@@ -58,6 +55,7 @@ pub mod helpers {
     pub mod symbols;
     pub mod text;
     pub mod time;
+    pub mod copy;
 }
 
 use crate::app::app::App;

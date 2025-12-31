@@ -36,17 +36,15 @@ use crate::app::app::{
 
 impl App {
 
-    pub fn draw_modal_commit(&mut self, frame: &mut Frame) {
+    pub fn draw_modal_input(&mut self, frame: &mut Frame, title: &str) {
         
         let length = 60;
-        let height = 14;
+        let height = 12;
 
         let lines: Vec<Line> = vec![
             Line::from(vec![
-                Span::styled("commit message:", Style::default().fg(self.theme.COLOR_TEXT)),
+                Span::styled(title, Style::default().fg(self.theme.COLOR_TEXT)),
             ]),
-            Line::from(""),
-            Line::from(""),
             Line::from(""),
             Line::from(""),
             Line::from(""),
@@ -76,7 +74,7 @@ impl App {
             .border_style(Style::default().fg(self.theme.COLOR_GREY_600))
             .title(Span::styled(if self.modal_editor.mode == EditorMode::Normal {" (esc) "} else { "─ esc ─" }, Style::default().fg(if self.modal_editor.mode == EditorMode::Normal { self.theme.COLOR_GREY_500 } else { self.theme.COLOR_GREY_600 })))
             .title_alignment(Alignment::Right)
-            .padding(Padding { left: 3, right: 3, top: 1, bottom: 1 })
+            .padding(Padding { left: 3, right: 3, top: 1, bottom: 1})
             .border_type(ratatui::widgets::BorderType::Rounded);
 
         // Modal content
@@ -96,24 +94,19 @@ impl App {
                     .padding(Padding { left: 1, right: 1, top: 0, bottom: 0})
                     .borders(Borders::TOP)
                     .border_type(ratatui::widgets::BorderType::Rounded)
-                    .border_style(Style::default().fg(self.theme.COLOR_GREY_800))
-            ),
+                    .border_style(Style::default().fg(self.theme.COLOR_GREY_800))),
             status_line: Some(EditorStatusLine::default()
-                        .style_text(Style::default().fg(self.theme.COLOR_TEXT))
-                        .style_line(Style::default().fg(self.theme.COLOR_GREY_800))
-                        .align_left(true)
-                    )
+                .style_text(Style::default().fg(self.theme.COLOR_TEXT))
+                .style_line(Style::default().fg(self.theme.COLOR_GREY_800))
+                .align_left(true))
         };
-        let editor_view = EditorView::new(&mut self.modal_editor)
-            .theme(custom_theme);
-            // .wrap(true);
-            // .syntax_highlighter(Some(SyntaxHighlighter::new("dracula", "json")));
+        let editor_view = EditorView::new(&mut self.modal_editor).theme(custom_theme);
         
         let input_area = Rect {
             x: modal_area.x + modal_area.width / 2 - 29,
             y: modal_area.y + 4,
             width: 58,
-            height: 6,
+            height: 4,
         };
 
         // Render the editor in the modal area
@@ -126,7 +119,7 @@ impl App {
             .border_type(ratatui::widgets::BorderType::Rounded)
             .render(Rect {
             x: modal_area.x + 1,
-            y: modal_area.y + 9,
+            y: modal_area.y + 7,
             width: 2,
             height: 1,
         }, frame.buffer_mut());
@@ -138,7 +131,7 @@ impl App {
             .border_type(ratatui::widgets::BorderType::Rounded)
             .render(Rect {
             x: modal_area.x + 11,
-            y: modal_area.y + 9,
+            y: modal_area.y + 7,
             width: modal_width - 12,
             height: 1,
         }, frame.buffer_mut());

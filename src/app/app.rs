@@ -50,7 +50,7 @@ use ratatui::{
         Span
     },
 };
-use crate::{core::stashes::Stashes, helpers::keymap::{Command, KeyBinding}};
+use crate::{core::stashes::Stashes, helpers::{copy::{STR_CREATE_BRANCH, STR_CREATE_COMMIT, STR_CREATE_TAG, STR_FIND_SHA}, keymap::{Command, KeyBinding}}};
 #[rustfmt::skip]
 use crate::{
     app::{
@@ -340,23 +340,23 @@ impl App  {
             Focus::ModalSolo => {
                 self.draw_modal_solo(frame);
             }
-            Focus::ModalCommit => {
-                self.draw_modal_commit(frame);
-            }
-            Focus::ModalCreateBranch => {
-                self.draw_modal_create_branch(frame);
-            }
             Focus::ModalDeleteBranch => {
                 self.draw_modal_delete_branch(frame);
             }
-            Focus::ModalGrep => {
-                self.draw_modal_grep(frame);
-            }
-            Focus::ModalTag => {
-                self.draw_modal_tag(frame);
-            }
             Focus::ModalDeleteTag => {
                 self.draw_modal_delete_tag(frame);
+            }
+            Focus::ModalCommit => {
+                self.draw_modal_input(frame, STR_CREATE_COMMIT);
+            }
+            Focus::ModalCreateBranch => {
+                self.draw_modal_input(frame, STR_CREATE_BRANCH);
+            }
+            Focus::ModalGrep => {
+                self.draw_modal_input(frame, STR_FIND_SHA);
+            }
+            Focus::ModalTag => {
+                self.draw_modal_input(frame, STR_CREATE_TAG);
             }
             _ => {}
         }
