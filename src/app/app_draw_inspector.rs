@@ -36,6 +36,9 @@ impl App {
 
     pub fn draw_inspector(&mut self, frame: &mut Frame) {
         
+        // Padding
+        let padding = ratatui::widgets::Padding { left: 2, right: 0, top: 0, bottom: 0 };
+        
         // Calculate maximum available width for text
         let available_width = self.layout.inspector.width as usize - 1;
         let max_text_width = available_width.saturating_sub(2);

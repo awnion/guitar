@@ -1,3 +1,4 @@
+use chrono::{Utc};
 #[rustfmt::skip]
 use ratatui::{
     Frame,
@@ -15,6 +16,7 @@ use ratatui::{
         ListItem,
     }
 };
+use crate::{git::queries::helpers::commits_per_day, helpers::heatmap::{build_heatmap, heat_cell}};
 #[rustfmt::skip]
 use crate::{
     helpers::{
@@ -71,42 +73,58 @@ impl App {
         self.settings_selections = Vec::new();
 
         lines.push(Line::default());
-        if self.layout.app.width < 120 && self.layout.app.height > 24 {
-            lines.push(Line::default());
-            lines.push(Line::default());
-            lines.push(Line::from(Span::styled("                    :#   :#                 ".to_string(), Style::default().fg(self.theme.COLOR_GRASS))).centered());
-            lines.push(Line::from(Span::styled("                         L#                 ".to_string(), Style::default().fg(self.theme.COLOR_GRASS))).centered());
-            lines.push(Line::from(Span::styled("  .##5#^.  .#   .#  :C  #C6#   #?##:        ".to_string(), Style::default().fg(self.theme.COLOR_GRASS))).centered());
-            lines.push(Line::from(Span::styled("  #B   #G  C#   #B  #7   B?        G#       ".to_string(), Style::default().fg(self.theme.COLOR_GRASS))).centered());
-            lines.push(Line::from(Span::styled("  #4   B5  B5   B5  B5   B5    1B5B#G  .a###".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());
-            lines.push(Line::from(Span::styled("  #b   5?  ?B   B5  B5   B5   ##   ##  B?   ".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());
-            lines.push(Line::from(Span::styled("  .#B~6G!  .#6#~G.  #5   ~##  .##Y~#.  !#   ".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());
-            lines.push(Line::from(Span::styled("      .##                              !B   ".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());
-            lines.push(Line::from(Span::styled("     ~G#                               ~?   ".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());
-            lines.push(Line::default());
-            lines.push(Line::default());
-            lines.push(Line::default());
-        } else if self.layout.app.height > 30{
-            lines.push(Line::default());
-            lines.push(Line::default());
-            lines.push(Line::from(Span::styled("                                 :GG~        .?Y.                                ".to_string(), Style::default().fg(self.theme.COLOR_GRASS))).centered());    
-            lines.push(Line::from(Span::styled("       ....        ..      ..   .....      . ^BG: ..       .....                 ".to_string(), Style::default().fg(self.theme.COLOR_GRASS))).centered());    
-            lines.push(Line::from(Span::styled("    .7555YY7JP^   ~PJ     ~PJ  ?YY5PP~    7YY5BGYYYYJ.   J555YY557.              ".to_string(), Style::default().fg(self.theme.COLOR_GRASS))).centered());    
-            lines.push(Line::from(Span::styled("   .5B?.  :JBB~   !#5     !#5  ...PB~     ...^BG:....    ~:.   .7#5           :^^".to_string(), Style::default().fg(self.theme.COLOR_GRASS))).centered());    
-            lines.push(Line::from(Span::styled("   7#5     .GB~   !B5     !B5     PB~        :BG.        .~7??J?JBG:      .~JPPPY".to_string(), Style::default().fg(self.theme.COLOR_GRASS))).centered());    
-            lines.push(Line::from(Span::styled("   ?#Y      PB~   !B5     !B5     PB~        :BG.       7GP7~^^^!BG:     ~5GY!:. ".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());    
-            lines.push(Line::from(Span::styled("   ^GB~    7BB~   ^BG.   .YB5     5#7        :BB:       P#!     JBG:    ^GG7     ".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());    
-            lines.push(Line::from(Span::styled("    ^5G5JJYJPB~    JBP???YYB5     ^5GYJJ?.    7GPJ???.  ~PGJ77?5J5B!    JG5      ".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());    
-            lines.push(Line::from(Span::styled("      .^~^..GB:     :~!!~. ^^       :~~~~      .^~~~~    .^!!!~. .^:    JG5      ".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());    
-            lines.push(Line::from(Span::styled("    .?!^^^!5G7                                                          YB5      ".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());    
-            lines.push(Line::from(Span::styled("    .!?JJJ?!:                                                           75?      ".to_string(), Style::default().fg(self.theme.COLOR_GREEN))).centered());    
-            lines.push(Line::default());
-            lines.push(Line::default());
-            lines.push(Line::default());
+
+        // Heatmap
+        lines.push(Line::default());
+        lines.push(
+            Line::from(
+                Span::styled(
+                    "commit heatmap (last year)",
+                    Style::default().fg(self.theme.COLOR_TEXT),
+                )
+            ).centered()
+        );
+        lines.push(Line::default());
+
+        let heatmap_width = self.heatmap[0].len();
+
+        // Top border
+        lines.push(Line::from(
+            Span::styled(
+                format!("╭{}╮", "─".repeat(heatmap_width + 2)),
+                Style::default().fg(self.theme.COLOR_GREY_800),
+            )
+        ).centered());
+
+        // Body
+        for day in 0..7 {
+            let mut spans = Vec::new();
+
+            spans.push(Span::styled("│ ", Style::default().fg(self.theme.COLOR_GREY_800)));
+            spans.extend(
+                self.heatmap[day]
+                    .iter()
+                    .map(|&count| heat_cell(count, &self.theme))
+            );
+            spans.push(Span::styled(" │", Style::default().fg(self.theme.COLOR_GREY_800)));
+
+            lines.push(Line::from(spans).centered());
         }
 
+        // Bottom border
+        lines.push(Line::from(
+            Span::styled(
+                format!("╰{}╯", "─".repeat(heatmap_width + 2)),
+                Style::default().fg(self.theme.COLOR_GREY_800),
+            )
+        ).centered());
+
+        lines.push(Line::default());
+        lines.push(Line::default());
+
+        // Credentials
         lines.push(Line::from(vec![
-            Span::styled(fill_width("credentials", "", max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT))
+            Span::styled(fill_width("credentials:", "", max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT))
         ]).centered());
         lines.push(Line::default());
 
@@ -140,22 +158,19 @@ impl App {
         self.settings_selections.push(lines.len() - 1);
 
         lines.push(Line::from(Span::styled(fill_width("monochrome", format!("({})", if self.theme.name == ThemeNames::Monochrome {"*"} else {" "}).as_str(), max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT).bg(self.theme.COLOR_GREY_900))).centered());
-        
+
         // Record the line index as selectable
         self.settings_selections.push(lines.len() - 1);
 
+        // Keymap
+        let mut pathbuf = dirs::config_dir().unwrap();
+        pathbuf.push("guitar");
+        pathbuf.push("keymap.toml");
+        let path = pathbuf.as_path().to_str().unwrap();
         lines.push(Line::default());
-        lines.push(Line::default());
-        lines.push(Line::from(Span::styled(" ╭─────────────────────────────────────────────────────────────────────╮".to_string(), Style::default().fg(self.theme.COLOR_GREY_800))).centered());    
-        lines.push(Line::from(Span::styled(" │ [_]   [_][_][_][_] [_][_][_][_] [_][_][_][_] [_][_][_] [_][_][_][_] │".to_string(), Style::default().fg(self.theme.COLOR_GREY_800))).centered());    
-        lines.push(Line::from(Span::styled(" │                                                                     │".to_string(), Style::default().fg(self.theme.COLOR_GREY_800))).centered());    
-        lines.push(Line::from(Span::styled(" │ [_][_][_][_][_][_][_][_][_][_][_][_][_][___] [_][_][_] [_][_][_][_] │".to_string(), Style::default().fg(self.theme.COLOR_GREY_800))).centered());    
-        lines.push(Line::from(Span::styled(" │ [__][_][_][_][_][_][_][_][_][_][_][_][_][  │ [_][_][_] [_][_][_][ | │".to_string(), Style::default().fg(self.theme.COLOR_GREY_800))).centered());    
-        lines.push(Line::from(Span::styled(" │ [___][_][_][_][_][_][_][_][_][_][_][_][_][_│           [_][_][_][_| │".to_string(), Style::default().fg(self.theme.COLOR_GREY_800))).centered());    
-        lines.push(Line::from(Span::styled(" │ [_][_][_][_][_][_][_][_][_][_][_][_][______]    [_]    [_][_][_][ | │".to_string(), Style::default().fg(self.theme.COLOR_GREY_800))).centered());    
-        lines.push(Line::from(Span::styled(" │ [__][_][__][_____________________][__][_][_] [_][_][_] [____][_][_| │".to_string(), Style::default().fg(self.theme.COLOR_GREY_800))).centered());    
-        lines.push(Line::from(Span::styled(" ╰─────────────────────────────────────────────────────────────────────╯".to_string(), Style::default().fg(self.theme.COLOR_GREY_800))).centered());    
-        lines.push(Line::default());
+        lines.push(Line::from(vec![
+            Span::styled(fill_width(format!("{}:", path).as_str(), "", max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT))
+        ]).centered());
         lines.push(Line::default());
 
         render_keybindings(&self.theme, &self.keymap, max_text_width / 2).iter().enumerate().for_each(|(idx, kb_line)| {

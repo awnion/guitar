@@ -5,6 +5,7 @@ use std::{
     rc::Rc,
     cell::RefCell
 };
+use chrono::Utc;
 #[rustfmt::skip]
 use git2::Repository;
 #[rustfmt::skip]
@@ -21,7 +22,7 @@ use edtui::{
     EditorEventHandler,
     EditorState
 };
-use crate::core::stashes::Stashes;
+use crate::{core::stashes::Stashes, git::queries::helpers::commits_per_day, helpers::heatmap::build_heatmap};
 #[rustfmt::skip]
 use crate::{
     app::{
@@ -78,6 +79,11 @@ impl Default for App {
             Span::styled("a", Style::default().fg(theme.COLOR_GRASS)),
             Span::styled("╭", Style::default().fg(theme.COLOR_GREEN))
         ];
+        let heatmap = {
+            let counts = commits_per_day(&repo);
+            let today = Utc::now().date_naive();
+            build_heatmap(&counts, today)
+        };
 
         App {
             // General
@@ -89,6 +95,7 @@ impl Default for App {
             keymap: IndexMap::new(),
             last_input_direction: None,
             theme,
+            heatmap,
 
             // User
             name: String::new(),

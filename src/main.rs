@@ -57,6 +57,7 @@ pub mod helpers {
     pub mod time;
     pub mod copy;
     pub mod logger;
+    pub mod heatmap;
 }
 
 use crate::app::app::App;

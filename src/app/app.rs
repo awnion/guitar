@@ -50,7 +50,7 @@ use ratatui::{
         Span
     },
 };
-use crate::{core::stashes::Stashes, helpers::{copy::{STR_CREATE_BRANCH, STR_CREATE_COMMIT, STR_CREATE_TAG, STR_FIND_SHA}, keymap::{Command, KeyBinding}}};
+use crate::{core::stashes::Stashes, helpers::{copy::{STR_CREATE_BRANCH, STR_CREATE_COMMIT, STR_CREATE_TAG, STR_FIND_SHA}, heatmap::{DAYS, WEEKS}, keymap::{Command, KeyBinding}}};
 #[rustfmt::skip]
 use crate::{
     app::{
@@ -134,7 +134,6 @@ pub enum Direction {
     Down,
     Up,
 }
-
 pub struct App {
 
     // General
@@ -146,6 +145,7 @@ pub struct App {
     pub keymap: IndexMap<KeyBinding, Command>,
     pub last_input_direction: Option<Direction>,
     pub theme: Theme,
+    pub heatmap: [[usize; WEEKS]; DAYS],
 
     // User
     pub name: String,
