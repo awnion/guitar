@@ -260,6 +260,7 @@ pub fn render_graph_range(
                                 {
                                     layers.merge(SYM_MERGE_LEFT_FROM, merger_idx);
                                     layers.merge(SYM_EMPTY, merger_idx);
+                                    is_merged_before = true;
                                     is_drawing = false;
                                 } else if is_drawing {
                                     layers.merge(SYM_HORIZONTAL, merger_idx);

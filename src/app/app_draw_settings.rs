@@ -1,4 +1,3 @@
-use chrono::{Utc};
 #[rustfmt::skip]
 use ratatui::{
     Frame,
@@ -16,7 +15,7 @@ use ratatui::{
         ListItem,
     }
 };
-use crate::{git::queries::helpers::commits_per_day, helpers::heatmap::{build_heatmap, heat_cell}};
+use crate::{ helpers::heatmap::{heat_cell}};
 #[rustfmt::skip]
 use crate::{
     helpers::{
@@ -76,14 +75,7 @@ impl App {
 
         // Heatmap
         lines.push(Line::default());
-        lines.push(
-            Line::from(
-                Span::styled(
-                    "commit heatmap (last year)",
-                    Style::default().fg(self.theme.COLOR_TEXT),
-                )
-            ).centered()
-        );
+        lines.push(Line::from(Span::styled("commit heatmap (last year)", Style::default().fg(self.theme.COLOR_TEXT))).centered());
         lines.push(Line::default());
 
         let heatmap_width = self.heatmap[0].len();
@@ -99,7 +91,6 @@ impl App {
         // Body
         for day in 0..7 {
             let mut spans = Vec::new();
-
             spans.push(Span::styled("│ ", Style::default().fg(self.theme.COLOR_GREY_800)));
             spans.extend(
                 self.heatmap[day]
@@ -107,7 +98,6 @@ impl App {
                     .map(|&count| heat_cell(count, &self.theme))
             );
             spans.push(Span::styled(" │", Style::default().fg(self.theme.COLOR_GREY_800)));
-
             lines.push(Line::from(spans).centered());
         }
 
@@ -118,45 +108,35 @@ impl App {
                 Style::default().fg(self.theme.COLOR_GREY_800),
             )
         ).centered());
-
         lines.push(Line::default());
         lines.push(Line::default());
 
         // Credentials
-        lines.push(Line::from(vec![
-            Span::styled(fill_width("credentials:", "", max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT))
-        ]).centered());
+        lines.push(Line::from(vec![Span::styled(fill_width("credentials:", "", max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT))]).centered());
         lines.push(Line::default());
-
         lines.push(Line::from(Span::styled(fill_width("name:", name.unwrap().as_str(), max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT).bg(self.theme.COLOR_GREY_900))).centered());
         
         // Record the line index as selectable
         self.settings_selections.push(lines.len() - 1);
-
         lines.push(Line::from(Span::styled(fill_width("email:", email.unwrap().as_str(), max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT))).centered());
         
         // Record the line index as selectable
         self.settings_selections.push(lines.len() - 1);
-
         lines.push(Line::from(Span::styled(fill_width("authorization:", "external ssh agent", max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT).bg(self.theme.COLOR_GREY_900))).centered());
         
         // Record the line index as selectable
         self.settings_selections.push(lines.len() - 1);
-
         lines.push(Line::default());
         lines.push(Line::from(Span::styled(fill_width("themes:", "", max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT))).centered());
         lines.push(Line::default());
-
         lines.push(Line::from(Span::styled(fill_width("classic", format!("({})", if self.theme.name == ThemeNames::Classic {"*"} else {" "}).as_str(), max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT).bg(self.theme.COLOR_GREY_900))).centered());
         
         // Record the line index as selectable
         self.settings_selections.push(lines.len() - 1);
-
         lines.push(Line::from(Span::styled(fill_width("ansi", format!("({})", if self.theme.name == ThemeNames::Ansi {"*"} else {" "}).as_str(), max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT))).centered());
         
         // Record the line index as selectable
         self.settings_selections.push(lines.len() - 1);
-
         lines.push(Line::from(Span::styled(fill_width("monochrome", format!("({})", if self.theme.name == ThemeNames::Monochrome {"*"} else {" "}).as_str(), max_text_width / 2), Style::default().fg(self.theme.COLOR_TEXT).bg(self.theme.COLOR_GREY_900))).centered());
 
         // Record the line index as selectable
@@ -191,6 +171,7 @@ impl App {
 
         // Snap to nearest selectable line if needed
         if !self.settings_selections.contains(&self.settings_selected) {
+            
             // Find nearest selectable line above or below
             let mut nearest = None;
 
