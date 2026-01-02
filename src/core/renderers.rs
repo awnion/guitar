@@ -102,42 +102,64 @@ pub fn render_graph_range(
         // Find branching lanes
         let mut branching_lanes: Vec<usize> = Vec::new();
         for (lane_idx, chunk) in last.iter().enumerate() {
+            // Dummy in the end, chunk exists ont the same lane in prev
             if chunk.is_dummy()
-                && let Some(prev_snapshot) = prev && let Some(prev) = prev_snapshot.get(lane_idx)
-                    && ((prev.parent_a != NONE && prev.parent_b == NONE) || (prev.parent_a == NONE && prev.parent_b != NONE)) {
-                        branching_lanes.push(lane_idx);
-                    }
+                && let Some(prev_snapshot) = prev
+                && let Some(prev) = prev_snapshot.get(lane_idx)
+                && ((prev.parent_a != NONE && prev.parent_b == NONE) || (prev.parent_a == NONE && prev.parent_b != NONE)) {
+                branching_lanes.push(lane_idx);
+                continue;
+            }
+
+            // Dummy in the end, while nothing existed on the same lane in the prev
+            if chunk.is_dummy()
+                && let Some(prev_snapshot) = prev
+                && prev_snapshot.get(lane_idx).is_none()
+            {
+                branching_lanes.push(lane_idx);
+            }
         }
 
         for chunk in last.iter() {
-            if is_commit_found && !branching_lanes.is_empty()
-                && let Some(&closest_lane) = branching_lanes.first() {
-                    if closest_lane == lane_idx {
-                        branching_lanes.remove(0);
-                    } else if lane_idx < closest_lane {
-                        layers.merge(SYM_EMPTY, closest_lane);
-                        layers.merge(SYM_EMPTY, closest_lane);
-                        layers.commit(SYM_EMPTY, closest_lane);
-                        layers.commit(SYM_EMPTY, closest_lane);
-                        layers.pipe(SYM_HORIZONTAL, closest_lane);
-                        layers.pipe(SYM_HORIZONTAL, closest_lane);
-                        lane_idx += 1;
-                        continue;
-                    }
+            if is_commit_found && !branching_lanes.is_empty() && let Some(&closest_lane) = branching_lanes.first() {
+                if closest_lane == lane_idx {
+                    branching_lanes.remove(0);
+                } else if lane_idx < closest_lane {
+                    layers.merge(SYM_EMPTY, closest_lane);
+                    layers.merge(SYM_EMPTY, closest_lane);
+                    layers.commit(SYM_EMPTY, closest_lane);
+                    layers.commit(SYM_EMPTY, closest_lane);
+                    layers.pipe(SYM_HORIZONTAL, closest_lane);
+                    layers.pipe(SYM_HORIZONTAL, closest_lane);
+                    lane_idx += 1;
+                    continue;
                 }
+            }
 
             if chunk.is_dummy() {
-                if let Some(prev_snapshot) = prev && let Some(prev) = prev_snapshot.get(lane_idx) {
-                    if (prev.parent_a != NONE && prev.parent_b == NONE) || (prev.parent_a == NONE && prev.parent_b != NONE) {
-                        layers.commit(SYM_EMPTY, lane_idx);
-                        layers.commit(SYM_EMPTY, lane_idx);
-                        layers.pipe(SYM_BRANCH_UP, lane_idx);
-                        layers.pipe(SYM_EMPTY, lane_idx);
-                    } else {
-                        layers.commit(SYM_EMPTY, lane_idx);
-                        layers.commit(SYM_EMPTY, lane_idx);
-                        layers.pipe(SYM_EMPTY, lane_idx);
-                        layers.pipe(SYM_EMPTY, lane_idx);
+                if let Some(prev_snapshot) = prev {
+                    match prev_snapshot.get(lane_idx) {
+                        Some(prev) => {
+                            // Dummy in the end, chunk exists ont the same lane in prev
+                            if (prev.parent_a != NONE && prev.parent_b == NONE) || (prev.parent_a == NONE && prev.parent_b != NONE) {
+                                layers.commit(SYM_EMPTY, lane_idx);
+                                layers.commit(SYM_EMPTY, lane_idx);
+                                layers.pipe(SYM_BRANCH_UP, lane_idx);
+                                layers.pipe(SYM_EMPTY, lane_idx);
+                            } else {
+                                layers.commit(SYM_EMPTY, lane_idx);
+                                layers.commit(SYM_EMPTY, lane_idx);
+                                layers.pipe(SYM_EMPTY, lane_idx);
+                                layers.pipe(SYM_EMPTY, lane_idx);
+                            }
+                        }
+                        None => {
+                            // Dummy in the end, while nothing existed on the same lane in the prev
+                            layers.commit(SYM_EMPTY, lane_idx);
+                            layers.commit(SYM_EMPTY, lane_idx);
+                            layers.pipe(SYM_BRANCH_UP, lane_idx);
+                            layers.pipe(SYM_EMPTY, lane_idx);
+                        }
                     }
                 }
             } else if *alias == chunk.alias {
@@ -429,19 +451,19 @@ pub fn render_buffer_range(
             .iter()
             .map(|chunk| {
                 let oid_str = if chunk.alias == NONE {
-                    "--".to_string()
+                    "".to_string()
                 } else {
-                    chunk.alias.to_string()
+                    format!("{:.2}", oids.get_oid_by_alias(chunk.alias).to_string())
                 };
 
                 let parents_formatted = match (chunk.parent_a, chunk.parent_b) {
-                    (NONE, NONE) => "--,--".to_string(),
-                    (a, NONE) => format!("{:.2},--", a),
-                    (NONE, b) => format!("--,{:.2}", b),
-                    (a, b) => format!("{:.2},{:.2}", a, b),
+                    (NONE, NONE) => "".to_string(),
+                    (a, NONE) => format!("{:.2},--", oids.get_oid_by_alias(a)),
+                    (NONE, b) => format!("--,{:.2}", oids.get_oid_by_alias(b)),
+                    (a, b) => format!("{:.2},{:.2}", oids.get_oid_by_alias(a), oids.get_oid_by_alias(b)),
                 };
 
-                format!("{}({:<5})", oid_str, parents_formatted)
+                format!("{}({})", oid_str, parents_formatted)
             })
             .collect::<Vec<_>>()
             .join(" ");

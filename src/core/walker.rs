@@ -212,8 +212,10 @@ impl Walker {
                 parents.get(1).map(|p| self.oids.get_alias_by_oid(*p)).unwrap_or(NONE),
             )};
 
+            // Create commit chunk for the current commit with its parents
             let chunk = Chunk::commit(alias, parent_a, parent_b);
 
+            // Here we will store whether the 
             let mut is_commit_found = false;
             let mut lane_idx = 0;
 
@@ -253,18 +255,6 @@ impl Walker {
                 }
 
                 lane_idx += 1;
-            }
-
-            if !is_commit_found {
-                self.branches_lanes.insert(alias, lane_idx);
-
-                if self.tags_local.contains_key(&alias) {
-                    self.tags_lanes.insert(alias, lane_idx);
-                }
-
-                if stashes.contains(&alias) {
-                    self.stashes_lanes.insert(alias, lane_idx);
-                }
             }
 
             // Now we can borrow mutably
